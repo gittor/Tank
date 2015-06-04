@@ -1,0 +1,1 @@
+cp -r app /Users/zhangdw/Documents/quick-3.5/projects/Tank/frameworks/runtime-src/proj.android/assets/src/
