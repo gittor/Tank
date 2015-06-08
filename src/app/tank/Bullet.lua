@@ -68,6 +68,8 @@ local function newBullet()
 		transition.stopTarget(self)
 
 		-- 爆炸
+		-- print("bullet:onDead")
+		-- assert(false)
 
 		if clean then
 			global.game_scene.gl:removeEventObserver(self)
@@ -88,6 +90,7 @@ local function newBullet()
 		ret.logic = ret:schedule(ret.onLogic, math.max(arg.speed.x,arg.speed.y)/1000)
 	end
 
+	-- ret:setLocalZOrder(global.zBullet)
 	return ret
 end
 

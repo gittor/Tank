@@ -45,6 +45,7 @@ function createRandProp()
 	local pt = math.random() * 10
 	pt = math.modf(pt)
 	pt = pt%5+1
+	pt = 5
 
 	-- print("pt_type[pt]", pt)
 

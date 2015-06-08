@@ -19,7 +19,7 @@ function EnermyMgr:onGSChanged(state)
 		self.remain_enermy = #self.tank_type
 		self.idx_born = 0
 
-		self.prop_enermy_cnt = rand(1,2)
+		self.prop_enermy_cnt = rand(7,9)
 
 		-- player
 		self:createPlayer()
@@ -86,6 +86,8 @@ function EnermyMgr:createEnermy()
 			enermy = newNormalEnermy(ty, pos)
 		end
 		global.game_scene.gl:addEventObserver(enermy)
+
+		-- print(enermy.type, enermy.name)
 
 		self.idx_born = (self.idx_born+1)%3
 		self.remain_enermy = self.remain_enermy-1

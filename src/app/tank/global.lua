@@ -12,7 +12,8 @@ global = {
 	zTank = 1000,
 	zBlock = 2000,
 	zProp = 3000,
-	zTips = 4000,
+	-- zBullet = 4000,
+	zTips = 5000, -- +500文字
 
 	-- 说明
 

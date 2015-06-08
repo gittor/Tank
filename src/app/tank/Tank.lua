@@ -2,17 +2,16 @@ require("app.tank.GameSprite")
 require("app.tank.structure")
 require("app.tank.prop")
 
-
-function newTankPlayer(png, pos)
+function newTankBase(png, pos)
 	local ret = newGameSprite(png)
-	
+
 	ret.set_dir = function(self, dir)
 		if self.dir==dir then return end
 
 		self.dir = dir
 		self:setRotation(dir*90)
 
-		local bd = 15
+		local bd = 30
 		local x,y = self:getPosition()
 		if x%bd~=0 then 
 			local i,p = math.modf(x/bd)
@@ -66,43 +65,15 @@ function newTankPlayer(png, pos)
 		end
 		if not can then return end
 
-		can = collisionObjs( global.game_scene.gl:objs('player'), self, clone(rc) )
+		can = self:walkOther( rc )
 		if not can then return end
-
-		can = collisionObjs( global.game_scene.gl:objs('enermy'), self, clone(rc) )
-		if not can then return end
-
-		can = collisionObjs( global.game_scene.gl:objs('prop'), self, clone(rc) )
-
+		
 		self:setPosition(x, y)
 
 		return true
 	end
 
-	ret.yinshen = function( self, flag )
-		if self.yin_sp then
-			self.yin_sp:removeSelf()
-			self.yin_sp = nil
-		end
-
-		if flag then
-			self.yin_sp = display.newSprite("yintank.png")
-			self.yin_sp:align(display.BOTTOM_LEFT)
-			self.yin_sp:addTo(self)
-		end
-	end
-
 	ret.bullets = {}
-	ret.fire = function( self )
-		local maxBullet = global.stars>=2 and 2 or 1
-		if #self.bullets>=maxBullet then return end
-
-		local bullet = newTankBullet(self)
-
-		assert(self.blood>0)
-		
-		self.bullets[#self.bullets+1] = bullet
-	end
 	ret.removeAllBullets = function( self )
 		for k,v in pairs(self.bullets) do
 			v.parent = nil
@@ -118,17 +89,72 @@ function newTankPlayer(png, pos)
 		end
 	end
 
+	-- 
+	ret.dir = 0 	-- 0, 1, 2, 3
+	ret.blood = 1
+	ret:setPosition(pos.x+30, pos.y+30)
+	ret:setLocalZOrder(global.zTank)
+
+	return ret
+end
+
+function newTankPlayer(png, pos)
+	local ret = newTankBase(png, pos)
+	
+	ret.walkOther = function( self, rc )
+		local can = 1
+
+		can = collisionObjs( global.game_scene.gl:objs('player'), self, clone(rc) )
+		if not can then return end
+
+		can = collisionObjs( global.game_scene.gl:objs('enermy'), self, clone(rc) )
+		if not can then return end
+
+		collisionObjs( global.game_scene.gl:objs('prop'), self, clone(rc) )
+
+		return can
+	end
+
+	-- flag: true false
+	ret.yinshen = function( self, flag )
+		if self.yin_sp then
+			self.yin_sp:removeSelf()
+			self.yin_sp = nil
+		end
+
+		if self.bornyinshen then
+			transition.removeAction(self.bornyinshen)
+			self.bornyinshen = nil
+		end
+
+		if flag then
+			self.yin_sp = display.newSprite("yintank.png")
+			self.yin_sp:align(display.BOTTOM_LEFT)
+			self.yin_sp:addTo(self)
+		end
+	end
+
+	ret.fire = function( self )
+		local maxBullet = global.stars>=2 and 2 or 1
+		if #self.bullets>=maxBullet then return end
+
+		local bullet = newTankBullet(self)
+
+		assert(self.blood>0)
+		
+		self.bullets[#self.bullets+1] = bullet
+	end
+	
 	ret.on_hit = function( self, bullet )
 	
-		-- assert(ret.blood>0)
 		if ret.blood<=0 then return false end
+
+		local ins = cc.rectIntersection( bullet:bound(), self:bound() )
+		if area(ins)<=0 then return false end
 
 		if self.yin_sp then 
 			return true
 		end
-
-		local ins = cc.rectIntersection( bullet:bound(), self:bound() )
-		if area(ins)<=0 then return false end
 
 		ret.blood = ret.blood - 1 --bullet.damage
 		if ret.blood<=0 then
@@ -166,28 +192,68 @@ function newTankPlayer(png, pos)
 	-- init
 	ret.type = 'player'
 	ret.name = 'player'
-	ret:setPosition(pos.x+30, pos.y+30)
-	ret.dir = 0 	-- 0, 1, 2, 3
-	ret.blood = 1
-	ret:setLocalZOrder(global.zTank)
+
+	ret:yinshen(true)
+	ret.bornyinshen = ret:schedule(function ( ... )
+		ret:yinshen(false)
+	end, 6)
 
 	return ret
 end
 
 function newNormalEnermy(type, pos)
 	local png = string.format("#enermy%d.png", type)
-	local ret = newTankPlayer(png, pos)
+	local ret = newTankBase(png, pos)
 
-	ret.onDead = function(self)
-		global.game_scene.gl:playBlast( self.type, cc.p(self:getPosition()) )
-		global.game_scene.gl:removeEventObserver(self)
-	end
+	ret.walkOther = function( self, rc )
+		local can = 1
+
+		can = collisionObjs( global.game_scene.gl:objs('player'), self, clone(rc) )
+		if not can then return end
+
+		can = collisionObjs( global.game_scene.gl:objs('enermy'), self, clone(rc) )
+		if not can then return end
+
+		-- collisionObjs( global.game_scene.gl:objs('prop'), self, clone(rc) )
+
+		return can
+	end	
 
 	ret.fire = function( self )
 		if #self.bullets>0 then return end
 		assert(self.blood>0)
 		local bullet = newTankBullet(self)
 		self.bullets[#self.bullets+1] = bullet
+		-- print(bullet.type)
+		-- print(bullet:getPositionX(), bullet:getPositionY())
+	end
+
+	ret.on_hit = function( self, bullet )
+	
+		-- assert(ret.blood>0)
+		if ret.blood<=0 then return false end
+
+		local ins = cc.rectIntersection( bullet:bound(), self:bound() )
+		if area(ins)<=0 then return false end
+
+		ret.blood = ret.blood - 1 --bullet.damage
+		if ret.blood<=0 then
+
+			self:removeAllBullets()
+
+			transition.stopTarget(self)
+
+			self:runAction( cc.CallFunc:create(function()
+				self:onDead()
+			end))
+		end
+
+		return true
+	end
+
+	ret.onDead = function(self)
+		global.game_scene.gl:playBlast( self.type, cc.p(self:getPosition()) )
+		global.game_scene.gl:removeEventObserver(self)
 	end
 
 	ret.autoWalk = function(self)

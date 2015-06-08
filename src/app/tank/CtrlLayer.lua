@@ -71,6 +71,7 @@ function CtrlLayer:onTouchLeft( name, pts )
 		end
 
 	elseif name=='moved' then
+		if not self.pt_start_l then return end
 
 		local dis = cc.pGetDistance(pt, self.pt_start_l)
 		if dis>20 then
