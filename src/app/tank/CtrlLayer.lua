@@ -111,7 +111,7 @@ function CtrlLayer:onTouchRight( name, pts )
 		if not self.click_r and not self.longtouch_r then
 			self.click_r = self:schedule(function()
 				self:beginLongTouchRight()
-			end, 0.1)
+			end, 0.03)
 			-- print(self.click_r)
 		end
 

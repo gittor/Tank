@@ -86,7 +86,8 @@ function newTankPlayer(png, pos)
 		end
 
 		if flag then
-			self.yin_sp = display.newSprite("#yin.png")
+			self.yin_sp = display.newSprite("yintank.png")
+			self.yin_sp:align(display.BOTTOM_LEFT)
 			self.yin_sp:addTo(self)
 		end
 	end
