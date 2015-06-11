@@ -36,6 +36,8 @@ global = {
 
 	totalScore = 0,
 
+	dead_enermy = {0,0,0,0},
+
 	-- GameScene独有的变量
 	game_scene = nil,
 

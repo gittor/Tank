@@ -252,6 +252,7 @@ function newNormalEnermy(type, pos)
 	end
 
 	ret.onDead = function(self)
+		global.dead_enermy[self.name] = global.dead_enermy[self.name] + 1
 		global.game_scene.gl:playBlast( self.type, cc.p(self:getPosition()) )
 		global.game_scene.gl:removeEventObserver(self)
 	end
@@ -324,7 +325,7 @@ function newNormalEnermy(type, pos)
 		ret.is_pause = true
 	end
 
-	ret.name = 'enermy'..global.game_scene.em.remain_enermy
+	ret.name = type
 	return ret
 end
 
@@ -360,10 +361,10 @@ function newPropEnermy(type, pos)
 		return true
 	end
 
-	ret.onDead = function(self)
-		global.game_scene.gl:playBlast( self.type, cc.p(self:getPosition()) )
-		global.game_scene.gl:removeEventObserver(self)
-	end
+	-- ret.onDead = function(self)
+	-- 	global.game_scene.gl:playBlast( self.type, cc.p(self:getPosition()) )
+	-- 	global.game_scene.gl:removeEventObserver(self)
+	-- end
 
 	-- init
 	local acts = {
